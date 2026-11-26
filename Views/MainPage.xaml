@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:MiniHelpDesk.ViewModels"
+             xmlns:model="clr-namespace:MiniHelpDesk.Models"
+             x:Class="MiniHelpDesk.Views.MainPage"
+             x:DataType="vm:TicketViewModel"
+             BackgroundColor="#EEF3F6">
+    <ContentPage.Resources>
+        <Color x:Key="Ink">#172C3D</Color>
+        <Color x:Key="Muted">#4B6273</Color>
+        <Color x:Key="Accent">#00675F</Color>
+        <Color x:Key="Stroke">#D4E0E7</Color>
+        <Color x:Key="Danger">#9F2636</Color>
+
+        <Style TargetType="Label">
+            <Setter Property="TextColor" Value="{StaticResource Ink}" />
+        </Style>
+        <Style x:Key="SectionTitle" TargetType="Label">
+            <Setter Property="FontSize" Value="22" />
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Setter Property="TextColor" Value="{StaticResource Ink}" />
+        </Style>
+        <Style x:Key="FieldLabel" TargetType="Label">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Setter Property="TextColor" Value="{StaticResource Ink}" />
+        </Style>
+        <Style x:Key="FieldError" TargetType="Label">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="TextColor" Value="{StaticResource Danger}" />
+        </Style>
+        <Style x:Key="Panel" TargetType="Border">
+            <Setter Property="BackgroundColor" Value="White" />
+            <Setter Property="Stroke" Value="{StaticResource Stroke}" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 16" />
+            <Setter Property="Padding" Value="22" />
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="MinimumHeightRequest" Value="42" />
+            <Setter Property="Padding" Value="14,8" />
+        </Style>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,*">
+        <Grid Padding="28,16" ColumnDefinitions="*,Auto" BackgroundColor="#142D3F">
+            <Label Text="Mini HelpDesk" FontSize="28" FontAttributes="Bold" TextColor="White"
+                   VerticalOptions="Center" />
+            <Button Grid.Column="1" Text="Uruchom testy" Clicked="RunTests"
+                    TextColor="White" BackgroundColor="#25495E" />
+        </Grid>
+
+        <Grid Grid.Row="1" Padding="24" RowDefinitions="Auto,*" RowSpacing="16">
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+                <Border Style="{StaticResource Panel}" Padding="16,10">
+                    <HorizontalStackLayout Spacing="12">
+                        <Label Text="{Binding TotalCount}" FontSize="24" FontAttributes="Bold" />
+                        <Label Text="Wszystkie zgłoszenia" VerticalOptions="Center" TextColor="{StaticResource Muted}" />
+                    </HorizontalStackLayout>
+                </Border>
+                <Border Grid.Column="1" Style="{StaticResource Panel}" Padding="16,10" BackgroundColor="#E3F3EF">
+                    <HorizontalStackLayout Spacing="12">
+                        <Label Text="{Binding OpenCount}" FontSize="24" FontAttributes="Bold" TextColor="{StaticResource Accent}" />
+                        <Label Text="Niezakończone zgłoszenia" VerticalOptions="Center" TextColor="{StaticResource Accent}" />
+                    </HorizontalStackLayout>
+                </Border>
+            </Grid>
+
+            <Grid Grid.Row="1" ColumnDefinitions="2*,3*" ColumnSpacing="16">
+                <Border Style="{StaticResource Panel}">
+                    <ScrollView>
+                        <VerticalStackLayout Spacing="14">
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                <Label Text="{Binding FormTitle}" Style="{StaticResource SectionTitle}"
+                                       VerticalOptions="Center" />
+                                <Button Grid.Column="1" Text="Anuluj" Command="{Binding CancelEditCommand}"
+                                        IsVisible="{Binding IsEditing}" TextColor="{StaticResource Accent}" BackgroundColor="#E3F3EF" />
+                            </Grid>
+
+                            <VerticalStackLayout Spacing="5">
+                                <Label Text="Nazwa" Style="{StaticResource FieldLabel}" />
+                                <Entry Text="{Binding Name}" Placeholder="Np. Brak połączenia Wi-Fi" PlaceholderColor="{StaticResource Muted}" BackgroundColor="#F6F9FB"
+                                       SemanticProperties.Description="Nazwa zgłoszenia" TextColor="{StaticResource Ink}" />
+                                <Label Text="{Binding NameError}" IsVisible="{Binding HasNameError}" Style="{StaticResource FieldError}" />
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout Spacing="5">
+                                <Label Text="Opis" Style="{StaticResource FieldLabel}" />
+                                <Editor Text="{Binding Description}" Placeholder="Opisz problem" PlaceholderColor="{StaticResource Muted}" BackgroundColor="#F6F9FB"
+                                        SemanticProperties.Description="Opis problemu"
+                                        TextColor="{StaticResource Ink}" HeightRequest="88" />
+                                <Label Text="{Binding DescriptionError}" IsVisible="{Binding HasDescriptionError}" Style="{StaticResource FieldError}" />
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout Spacing="5">
+                                <Label Text="Priorytet" Style="{StaticResource FieldLabel}" />
+                                <Picker ItemsSource="{Binding Priorities}" SelectedItem="{Binding Priority}"
+                                        Title="Wybierz priorytet" TitleColor="{StaticResource Muted}" BackgroundColor="#F6F9FB" SemanticProperties.Description="Priorytet"
+                                        TextColor="{StaticResource Ink}" />
+                                <Label Text="{Binding PriorityError}" IsVisible="{Binding HasPriorityError}" Style="{StaticResource FieldError}" />
+                            </VerticalStackLayout>
+
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" IsVisible="{Binding IsEditing}">
+                                <VerticalStackLayout Spacing="5">
+                                    <Label Text="Status" Style="{StaticResource FieldLabel}" />
+                                    <Picker ItemsSource="{Binding Statuses}" SelectedItem="{Binding SelectedStatus}"
+                                            Title="Zmień status" TitleColor="{StaticResource Muted}" BackgroundColor="#F6F9FB" SemanticProperties.Description="Status"
+                                            TextColor="{StaticResource Ink}" />
+                                </VerticalStackLayout>
+                                <Button Grid.Column="1" Text="Usuń" Command="{Binding DeleteCommand}"
+                                        VerticalOptions="End" BackgroundColor="#FAE7EB" TextColor="{StaticResource Danger}" />
+                            </Grid>
+
+                            <Button Text="{Binding SaveLabel}" Command="{Binding SaveCommand}"
+                                    BackgroundColor="{StaticResource Accent}" TextColor="White" FontAttributes="Bold" />
+                        </VerticalStackLayout>
+                    </ScrollView>
+                </Border>
+
+                <Border Grid.Column="1" Style="{StaticResource Panel}">
+                    <Grid RowDefinitions="Auto,*" RowSpacing="14">
+                        <Label Text="Lista zgłoszeń" Style="{StaticResource SectionTitle}" />
+                        <CollectionView Grid.Row="1" ItemsSource="{Binding Tickets}" SelectionMode="Single" ItemSizingStrategy="MeasureAllItems"
+                                        SelectedItem="{Binding SelectedTicket, Mode=TwoWay}">
+                            <CollectionView.EmptyView>
+                                <VerticalStackLayout Spacing="5" HorizontalOptions="Center" VerticalOptions="Center">
+                                    <Label Text="Brak zgłoszeń" FontSize="18" FontAttributes="Bold" HorizontalTextAlignment="Center" />
+                                    <Label Text="Użyj formularza, aby dodać zgłoszenie." TextColor="{StaticResource Muted}" HorizontalTextAlignment="Center" />
+                                </VerticalStackLayout>
+                            </CollectionView.EmptyView>
+                            <CollectionView.ItemsLayout>
+                                <LinearItemsLayout Orientation="Vertical" ItemSpacing="8" />
+                            </CollectionView.ItemsLayout>
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="model:Ticket">
+                                    <Border Padding="14,10" Stroke="{StaticResource Stroke}"
+                                            BackgroundColor="#F6F9FB" StrokeShape="RoundRectangle 10">
+                                        <VisualStateManager.VisualStateGroups>
+                                            <VisualStateGroup Name="CommonStates">
+                                                <VisualState Name="Normal" />
+                                                <VisualState Name="Selected">
+                                                    <VisualState.Setters>
+                                                        <Setter Property="BackgroundColor" Value="#DFEFEC" />
+                                                        <Setter Property="Stroke" Value="{StaticResource Accent}" />
+                                                    </VisualState.Setters>
+                                                </VisualState>
+                                            </VisualStateGroup>
+                                        </VisualStateManager.VisualStateGroups>
+                                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="5">
+                                            <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="16" LineBreakMode="WordWrap" />
+                                            <Label Grid.Column="1" Text="{Binding Id, StringFormat='#{0}'}" TextColor="{StaticResource Muted}" />
+                                            <Label Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding Description}"
+                                                   TextColor="{StaticResource Muted}" LineBreakMode="WordWrap" MaxLines="3" />
+                                            <Label Grid.Row="2" Text="{Binding Priority, StringFormat='Priorytet · {0}'}"
+                                                   TextColor="{StaticResource Muted}" />
+                                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding Status}"
+                                                   TextColor="{StaticResource Accent}" FontAttributes="Bold" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</ContentPage>
